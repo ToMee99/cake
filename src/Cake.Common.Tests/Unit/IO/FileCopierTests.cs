@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Cake.Common.IO;
@@ -12,6 +13,126 @@ namespace Cake.Common.Tests.Unit.IO
     {
         public sealed class FileCopierTestsMethod
         {
+            [Fact]
+            public void Should_Copy_File_To_Directory()
+            {
+                const string filePath = "./src/a/a.txt";
+                const string dstPath = "./dst";
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureFileExists(filePath);
+                fixture.EnsureDirectoryExists(dstPath);
+
+                // When
+                FileCopier.CopyFileToDirectory(fixture.Context, filePath, dstPath);
+
+                // Then
+                Assert.True(fixture.ExistsFile($"{dstPath}/a/a.txt"));
+            }
+
+            [Fact]
+            public void Should_Throw_If_FilePath_Is_Null_CopyFileToDirectory()
+            {
+                const string filePath = null;
+                const string dstPath = "./dst";
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureDirectoryExists(dstPath);
+
+                // When
+                var result = Record.Exception(() => FileCopier.CopyFileToDirectory(fixture.Context, filePath, dstPath));
+
+                // Then
+                AssertEx.IsArgumentNullException(result, "filePath");
+            }
+
+            [Fact]
+            public void Should_Throw_If_Destination_Is_Null_CopyFileToDirectory()
+            {
+                const string filePath = "./src/a/a.txt";
+                const string dstPath = null;
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureFileExists(filePath);
+
+                // When
+                var result = Record.Exception(() => FileCopier.CopyFileToDirectory(fixture.Context, filePath, dstPath));
+
+                // Then
+                AssertEx.IsArgumentNullException(result, "targetDirectoryPath");
+            }
+
+            [Fact]
+            public void Should_Throw_If_FilePath_Is_Null_In_Copy_File()
+            {
+                const string filePath = null;
+                const string dstPath = "./dst";
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureDirectoryExists(dstPath);
+
+                // When
+                var result = Record.Exception(() => FileCopier.CopyFile(fixture.Context, filePath, dstPath));
+
+                // Then
+                AssertEx.IsArgumentNullException(result, "filePath");
+            }
+
+            [Fact]
+            public void Should_Throw_If_TargetDirectory_Is_Null_In_Copy_File()
+            {
+                const string filePath = "./src/a/a.txt";
+                const string dstPath = null;
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureFileExists(filePath);
+
+                // When
+                var result = Record.Exception(() => FileCopier.CopyFile(fixture.Context, filePath, dstPath));
+
+                // Then
+                AssertEx.IsArgumentNullException(result, "targetFilePath");
+            }
+
+            [Fact]
+            public void Should_Throw_If_TargetDirectory_Does_Not_Exists_In_Copy_File()
+            {
+                const string filePath = "./src/a/a.txt";
+                const string dstPath = "./dst";
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureFileExists(filePath);
+
+                // When
+                var result = Record.Exception(() => FileCopier.CopyFile(fixture.Context, filePath, dstPath));
+
+                AssertEx.IsExceptionWithMessage<DirectoryNotFoundException>(result, $"The directory '{dstPath}' does not exist.");
+            }
+
+            [Fact]
+            public void Should_Copy_File()
+            {
+                const string filePath = "./src/a/a.txt";
+                const string dstPath = "./dst";
+
+                // Given
+                var fixture = new FileCopierFixture();
+                fixture.EnsureFileExists(filePath);
+                fixture.EnsureDirectoryExists(dstPath);
+
+                // When
+                FileCopier.CopyFile(fixture.Context, filePath, dstPath);
+
+                // Then
+                Assert.True(fixture.ExistsFile($"{dstPath}/a/a.txt"));
+            }
+
             [Fact]
             public void Should_Copy_Single_File_Relative_Path()
             {
